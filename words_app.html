@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>learn words!</title>
+  <script src="https://cdn.jsdelivr.net/npm/vue@2.6.14"></script>
+  <style>
+    .done {
+        text-decoration: line-through;
+    }
+</style>
+</head>
+<body>
+  <div id="app">
+    <!-- formが送られた時にページの更新を止める -->
+    <form @submit.prevent="addWord">
+      単語：
+      <input v-model="newWord" placeholder="例）prop">
+      意味：
+      <input v-model="meaning" placeholder="例）小道具、支え、突っ張り">
+      <button>登録する</button>
+    </form>
+    <ul>
+      <li v-for="word in filterWords" :key="word.id">
+        <input type="checkbox" v-model="word.done">
+        <!-- もしtodo.doneがtrueの場合、doneクラスが要素に適用 -->
+        <!-- 参照：https://v2.ja.vuejs.org/v2/guide/class-and-style ※Vue3のドキュメントには記載なし-->
+        <span :class="{ done: word.done }">
+          {{ word.showWords ? word.inputWord : '' }}
+           : {{ word.showMeanings ? word.inputMeaning : '' }}
+        </span>
+        <button @click="removeWord(word)">削除</button>
+        <button @click="toggleWords(word)">
+          {{ word.showWords ? '単語を隠す': '単語を表示 '}}
+        </button>
+        <button @click="toggleMeanings(word)">
+          {{ word.showMeanings ? '意味を隠す' : '意味を表示'}}
+        </button>
+      </li>
+    </ul>
+    <!-- ボタンが押されると、checkの有無によって、todoの表示、非表示を選択する -->
+    <button @click="toggleHideCompleted">
+      {{ hideBtn ? '表示する': '隠す'}}
+    </button>
+
+  </div>
+<script>
+  new Vue({
+    el: '#app',
+    data: {
+        newWord: '',
+        meaning: '',
+        hideBtn: false,
+        //学びたい単語とその意味
+        words: [
+          { id: 0, inputWord: 'Learn', inputMeaning: '学ぶ', done: false, showWords: true, showMeanings: true },
+          { id: 1, inputWord: 'Play', inputMeaning: '遊ぶ', done: false, showWords: true, showMeanings: true },
+        ],
+    },
+      //算出プロパティ→値が更新及び、読み込まれた時にする処理
+      computed: {
+        filterWords () {
+          return this.hideBtn
+          //tuethy, falseyを変更する
+          ? this.words.filter((w) => !w.done)
+          : this.words
+        }
+      },
+      methods: {
+        //配列に学びたい単語を登録する
+        //条件式の中などの真偽値を必要とする場面では、文字列等はtruethy,falseyとして評価される
+        addWord() {
+          if (this.newWord && this.meaning) {
+            this.words.push({
+              id: this.words.length,
+              //HTMLに表示させるものの名前をダブらせると表示エラーになるので、そこだけ変数名は変える
+              inputWord: this.newWord,
+              inputMeaning: this.meaning,
+              done : false,
+              showWords: true,
+              showMeanings: true,
+            });
+            //値が入力されたら、一旦空白に
+            this.newWord = '';
+            this.meaning = '';
+          }
+        },
+        removeWord(word) {
+          //this.words = this.words.filter((w) => w !== word);
+          //上記の場合、アローの右側の式がそのまま関数の返り値として評価
+          this.words = this.words.filter((w) => {return w !== word});
+        },
+        toggleHideCompleted() {
+          this.hideBtn = !this.hideBtn
+        },
+        toggleWords(word) {
+          word.showWords = !word.showWords
+        },
+
+        toggleMeanings(word) {
+          word.showMeanings = !word.showMeanings
+        }
+        
+      }
+  });
+</script>
+</body>
+</html>
